@@ -1,58 +1,83 @@
-# 认证与用户模块接口测试示例
+# 认证 + 分类 + 闲置物品模块接口测试示例
 
-## 1. 注册
-```bash
-curl -X POST http://localhost:8080/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "user1001",
-    "password": "User@123456",
-    "nickname": "测试用户",
-    "phone": "13800138000",
-    "email": "user1001@example.com"
-  }'
-```
-
-## 2. 登录
+## 0) 登录获取 token
 ```bash
 curl -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
+  -d '{"username":"user01","password":"User@123456"}'
+```
+
+## 1) 分类查询（公开）
+```bash
+curl http://localhost:8080/api/categories
+```
+
+## 2) 分类新增（管理员）
+```bash
+curl -X POST http://localhost:8080/api/categories \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
   -d '{
-    "username": "user1001",
-    "password": "User@123456"
+    "categoryName":"乐器",
+    "sortNo": 10,
+    "icon": "https://img.example.com/icon.png",
+    "status": 1
   }'
 ```
 
-> 从返回中取 `data.token`，下方用 `$TOKEN` 代替。
-
-## 3. 获取当前用户
+## 3) 上传物品图片（登录）
 ```bash
-curl -X GET http://localhost:8080/api/auth/me \
+curl -X POST http://localhost:8080/api/files/upload \
+  -H "Authorization: Bearer $TOKEN" \
+  -F "file=@/path/to/item.jpg"
+```
+
+## 4) 发布闲置物品（登录）
+```bash
+curl -X POST http://localhost:8080/api/items \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "categoryId": 1,
+    "title": "九成新计算器",
+    "description": "考试用计算器，功能正常",
+    "conditionLevel": 4,
+    "expectedItemDesc": "希望换编程书",
+    "campusLocation": "图书馆门口",
+    "contactInfo": "微信: campus_test",
+    "imageUrls": ["/uploads/abc.jpg","/uploads/def.jpg"]
+  }'
+```
+
+## 5) 编辑物品（仅本人或管理员）
+```bash
+curl -X PUT http://localhost:8080/api/items/1 \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "categoryId": 1,
+    "title": "九成新计算器（已降价）",
+    "description": "成色好，支持当面验货",
+    "conditionLevel": 4,
+    "expectedItemDesc": "希望换 C++ 书",
+    "campusLocation": "宿舍楼下",
+    "contactInfo": "微信: campus_test_2",
+    "imageUrls": ["/uploads/new1.jpg"]
+  }'
+```
+
+## 6) 删除物品（仅本人或管理员）
+```bash
+curl -X DELETE http://localhost:8080/api/items/1 \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-## 4. 修改个人资料
+## 7) 物品详情（公开）
 ```bash
-curl -X PUT http://localhost:8080/api/users/profile \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nickname": "新昵称",
-    "realName": "张三",
-    "gender": 1,
-    "phone": "13900139000",
-    "email": "newmail@example.com",
-    "avatarUrl": "http://localhost:8080/static/avatar.png"
-  }'
+curl http://localhost:8080/api/items/1
 ```
 
-## 5. 修改密码
+## 8) 物品分页 + 关键词 + 分类筛选（公开）
 ```bash
-curl -X PUT http://localhost:8080/api/users/password \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "oldPassword": "User@123456",
-    "newPassword": "User@12345678"
-  }'
+curl "http://localhost:8080/api/items?pageNum=1&pageSize=10&keyword=计算器&categoryId=1"
 ```
