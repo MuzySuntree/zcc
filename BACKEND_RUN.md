@@ -91,3 +91,16 @@ JWT_SECRET=CampusIdleJwtSecretCampusIdleJwtSecret123456
 - 后端：`http://localhost:8080`
 - 前端：`cd frontend && npm install && npm run dev`（默认 `http://localhost:5173`）
 - Vite 已代理 `/api` 和 `/uploads` 到后端。
+
+
+## 7) 为什么你现在一直是 `using password: NO`
+
+因为当前启动时没有传 `DB_PASSWORD`，而 Spring 会使用 `application.yml` 默认值。
+如果默认值为空，就会尝试“无密码连接”，日志里就会显示 `using password: NO`。
+
+本项目现在已把默认值改为：
+
+- `DB_USERNAME: root`
+- `DB_PASSWORD: root`
+
+即：**不配环境变量时会尝试 root/root**；如果你本机不是这个密码，请按第 2 节覆盖。
