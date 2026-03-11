@@ -1,6 +1,6 @@
 <template>
-  <el-card>
-    <h3>发布闲置物品</h3>
+  <el-card class="soft-card page-enter">
+    <h3 class="section-title">发布闲置物品</h3>
     <el-form :model="form" label-width="120px">
       <el-form-item label="分类">
         <el-select v-model="form.categoryId" style="width:220px"><el-option v-for="c in categories" :key="c.id" :value="c.id" :label="c.categoryName"/></el-select>

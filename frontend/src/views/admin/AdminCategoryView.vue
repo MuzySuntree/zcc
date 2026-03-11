@@ -1,6 +1,6 @@
 <template>
-  <el-card>
-    <h3>分类管理</h3>
+  <el-card class="soft-card page-enter">
+    <h3 class="section-title">分类管理</h3>
     <el-space>
       <el-input v-model="form.categoryName" placeholder="分类名" style="width:160px"/>
       <el-input-number v-model="form.sortNo" :min="0"/>

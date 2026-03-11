@@ -1,6 +1,6 @@
 <template>
-  <el-card>
-    <h3>交换记录管理</h3>
+  <el-card class="soft-card page-enter">
+    <h3 class="section-title">交换记录管理</h3>
     <el-table :data="list.records">
       <el-table-column prop="id" label="ID" width="80"/>
       <el-table-column prop="itemTitle" label="物品"/>

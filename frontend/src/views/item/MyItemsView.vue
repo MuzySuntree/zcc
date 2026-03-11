@@ -1,6 +1,6 @@
 <template>
-  <el-card>
-    <h3>我的物品</h3>
+  <el-card class="soft-card page-enter">
+    <h3 class="section-title">我的物品</h3>
     <el-table :data="list.records">
       <el-table-column prop="title" label="标题" />
       <el-table-column prop="categoryName" label="分类" width="120" />

@@ -1,0 +1,33 @@
+:root {
+  --bg: linear-gradient(135deg, #f4f7ff 0%, #eefaf6 100%);
+  --card-bg: rgba(255, 255, 255, 0.92);
+  --primary: #4f7cff;
+  --text-main: #273043;
+  --text-sub: #6b778c;
+  --radius-xl: 16px;
+  --shadow-main: 0 10px 30px rgba(79, 124, 255, 0.12);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+  color: var(--text-main);
+  background: var(--bg);
+}
+.page-enter { animation: slideFadeIn .45s ease; }
+.soft-card {
+  border: 1px solid rgba(255, 255, 255, .7);
+  background: var(--card-bg);
+  box-shadow: var(--shadow-main);
+  border-radius: var(--radius-xl);
+  backdrop-filter: blur(4px);
+}
+.section-title { margin: 0 0 16px; font-size: 22px; font-weight: 700; }
+.muted { color: var(--text-sub); }
+@keyframes slideFadeIn {
+  from { opacity: 0; transform: translateY(12px) scale(.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.el-button--primary { background: linear-gradient(135deg, #4f7cff, #6a9bff); border: none; }
+.el-table { border-radius: 12px; overflow: hidden; }
+.el-card { border: none !important; }

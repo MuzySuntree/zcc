@@ -1,5 +1,5 @@
 <template>
-  <el-card>
+  <el-card class="soft-card page-enter">
     <el-form :inline="true" :model="query">
       <el-form-item label="关键词"><el-input v-model="query.keyword" /></el-form-item>
       <el-form-item label="分类">

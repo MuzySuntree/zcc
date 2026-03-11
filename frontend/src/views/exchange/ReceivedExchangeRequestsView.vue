@@ -1,6 +1,6 @@
 <template>
-  <el-card>
-    <h3>我收到的申请</h3>
+  <el-card class="soft-card page-enter">
+    <h3 class="section-title">我收到的申请</h3>
     <el-table :data="list.records">
       <el-table-column prop="itemTitle" label="物品" />
       <el-table-column prop="fromUserNickname" label="申请人" width="120" />

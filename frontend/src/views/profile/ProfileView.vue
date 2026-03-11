@@ -1,6 +1,6 @@
 <template>
-  <el-card>
-    <h3>个人中心</h3>
+  <el-card class="soft-card page-enter">
+    <h3 class="section-title">个人中心</h3>
     <el-form :model="profile" label-width="100px" style="max-width: 560px">
       <el-form-item label="昵称"><el-input v-model="profile.nickname" /></el-form-item>
       <el-form-item label="真实姓名"><el-input v-model="profile.realName" /></el-form-item>

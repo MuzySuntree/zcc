@@ -1,6 +1,6 @@
 <template>
-  <el-card>
-    <h3>我发起的交换申请</h3>
+  <el-card class="soft-card page-enter">
+    <h3 class="section-title">我发起的交换申请</h3>
     <el-table :data="list.records">
       <el-table-column prop="itemTitle" label="物品" />
       <el-table-column prop="toUserNickname" label="对方" width="120" />
