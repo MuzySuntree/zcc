@@ -81,3 +81,62 @@ curl http://localhost:8080/api/items/1
 ```bash
 curl "http://localhost:8080/api/items?pageNum=1&pageSize=10&keyword=计算器&categoryId=1"
 ```
+
+## 9) 发起交换申请（登录）
+```bash
+curl -X POST http://localhost:8080/api/exchange-requests \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "itemId": 2,
+    "message": "我想和你交换",
+    "offeredItemDesc": "可换八成新篮球"
+  }'
+```
+
+## 10) 查看我发起的申请（登录）
+```bash
+curl "http://localhost:8080/api/exchange-requests/sent?pageNum=1&pageSize=10" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+## 11) 查看我收到的申请（登录）
+```bash
+curl "http://localhost:8080/api/exchange-requests/received?pageNum=1&pageSize=10" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+## 12) 同意申请（物品拥有者）
+```bash
+curl -X PUT http://localhost:8080/api/exchange-requests/1/handle \
+  -H "Authorization: Bearer $OWNER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "action": "AGREE",
+    "exchangeLocation": "图书馆门口",
+    "note": "今晚7点"
+  }'
+```
+
+## 13) 拒绝申请（物品拥有者）
+```bash
+curl -X PUT http://localhost:8080/api/exchange-requests/1/handle \
+  -H "Authorization: Bearer $OWNER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "action": "REJECT",
+    "note": "暂时不需要"
+  }'
+```
+
+## 14) 取消申请（申请发起者）
+```bash
+curl -X PUT http://localhost:8080/api/exchange-requests/1/cancel \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+## 15) 查询我的交换记录（登录）
+```bash
+curl "http://localhost:8080/api/exchange-records/my?pageNum=1&pageSize=10" \
+  -H "Authorization: Bearer $TOKEN"
+```
