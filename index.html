@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>二手交换平台 - 登录</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="login-layout">
+      <section class="carousel-panel" aria-label="平台特色轮播图">
+        <div class="carousel" id="carousel">
+          <article class="slide active" style="--bg: linear-gradient(135deg, #536976, #292e49)">
+            <h2>校园闲置轻松流转</h2>
+            <p>发布教材、耳机、自行车等二手好物，快速找到同城买家。</p>
+          </article>
+          <article class="slide" style="--bg: linear-gradient(135deg, #0f2027, #2c5364)">
+            <h2>面对面交易更安心</h2>
+            <p>支持同校认证与交易评价，让每一次交换都更透明可靠。</p>
+          </article>
+          <article class="slide" style="--bg: linear-gradient(135deg, #3a1c71, #d76d77, #ffaf7b)">
+            <h2>以物换物，环保省钱</h2>
+            <p>你不再需要的物品，可能正是别人正在寻找的宝贝。</p>
+          </article>
+          <article class="slide" style="--bg: linear-gradient(135deg, #283048, #859398)">
+            <h2>每日精选交换好物</h2>
+            <p>系统推荐高性价比闲置，发现更多值得入手的二手商品。</p>
+          </article>
+        </div>
+
+        <div class="carousel-controls">
+          <button id="prevBtn" aria-label="上一张">‹</button>
+          <div class="dots" id="dots" aria-label="轮播分页"></div>
+          <button id="nextBtn" aria-label="下一张">›</button>
+        </div>
+      </section>
+
+      <section class="login-panel">
+        <div class="login-card">
+          <h1>欢迎回来</h1>
+          <p>登录你的二手交换平台账号，继续发布与淘你想要的好物。</p>
+          <form>
+            <label for="account">账号</label>
+            <input id="account" type="text" placeholder="手机号 / 邮箱" />
+
+            <label for="password">密码</label>
+            <input id="password" type="password" placeholder="请输入密码" />
+
+            <button type="submit">登录</button>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
