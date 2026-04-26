@@ -48,4 +48,14 @@ public class ItemController {
     public Result<PageResult<ItemSimpleVO>> page(@Valid ItemQueryDTO dto) {
         return Result.success(itemService.page(dto));
     }
+
+    @GetMapping("/my")
+    public Result<PageResult<ItemSimpleVO>> myPage(@Valid ItemQueryDTO dto) {
+        return Result.success(itemService.myPage(dto));
+    }
+
+    @GetMapping("/admin")
+    public Result<PageResult<ItemSimpleVO>> adminPage(@Valid ItemQueryDTO dto) {
+        return Result.success(itemService.adminPage(dto));
+    }
 }

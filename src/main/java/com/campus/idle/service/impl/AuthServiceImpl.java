@@ -34,8 +34,10 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
 
-    public AuthServiceImpl(SysUserRepository userRepository, SysRoleRepository roleRepository,
-                           PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager,
+    public AuthServiceImpl(SysUserRepository userRepository,
+                           SysRoleRepository roleRepository,
+                           PasswordEncoder passwordEncoder,
+                           AuthenticationManager authenticationManager,
                            JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
@@ -50,6 +52,7 @@ public class AuthServiceImpl implements AuthService {
         if (userRepository.existsByUsername(dto.getUsername())) {
             throw new BizException(ResultCode.CONFLICT, "用户名已存在");
         }
+
         SysRole userRole = roleRepository.findByRoleCodeAndDeleted("ROLE_USER", 0)
                 .orElseThrow(() -> new BizException(ResultCode.NOT_FOUND, "默认角色不存在，请先初始化数据"));
 
@@ -57,9 +60,11 @@ public class AuthServiceImpl implements AuthService {
         user.setUsername(dto.getUsername());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setNickname(dto.getNickname());
+        user.setRealName(dto.getRealName());
         user.setPhone(dto.getPhone());
         user.setEmail(dto.getEmail());
         user.getRoles().add(userRole);
+
         userRepository.save(user);
     }
 
@@ -69,14 +74,21 @@ public class AuthServiceImpl implements AuthService {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(dto.getUsername(), dto.getPassword()));
+
             CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
             SysUser user = userDetails.getUser();
+
             user.setLastLoginTime(LocalDateTime.now());
             user.setLastLoginIp(ip);
             userRepository.save(user);
 
-            Set<String> roleCodes = user.getRoles().stream().map(SysRole::getRoleCode).collect(Collectors.toSet());
+            Set<String> roleCodes = user.getRoles()
+                    .stream()
+                    .map(SysRole::getRoleCode)
+                    .collect(Collectors.toSet());
+
             String token = jwtUtil.generateToken(user.getId(), user.getUsername(), roleCodes.stream().toList());
+
             return LoginVO.builder()
                     .token(token)
                     .tokenType("Bearer")

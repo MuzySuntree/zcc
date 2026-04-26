@@ -16,4 +16,6 @@ public interface ExchangeRequestService {
     ExchangeRequestVO handle(Long requestId, ExchangeRequestHandleDTO dto);
 
     void cancel(Long requestId);
+
+    void confirmComplete(Long requestId);
 }

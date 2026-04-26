@@ -47,4 +47,10 @@ public class ExchangeRequestController {
         exchangeRequestService.cancel(id);
         return Result.success();
     }
+
+    @PutMapping("/{id}/confirm-complete")
+    public Result<Void> confirmComplete(@PathVariable Long id) {
+        exchangeRequestService.confirmComplete(id);
+        return Result.success();
+    }
 }

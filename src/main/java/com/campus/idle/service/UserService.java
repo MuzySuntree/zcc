@@ -10,4 +10,6 @@ public interface UserService {
     UserVO updateProfile(UpdateProfileDTO dto);
 
     void changePassword(ChangePasswordDTO dto);
+
+    void adminResetPassword(Long userId, String newPassword);
 }

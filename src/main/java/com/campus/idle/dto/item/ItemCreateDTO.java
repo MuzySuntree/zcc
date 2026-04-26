@@ -19,7 +19,7 @@ public class ItemCreateDTO {
 
     @NotNull
     @Min(1)
-    @Max(5)
+    @Max(10)
     private Integer conditionLevel;
 
     @Size(max = 255)

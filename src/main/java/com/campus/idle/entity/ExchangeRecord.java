@@ -43,4 +43,10 @@ public class ExchangeRecord extends BaseEntity {
 
     @Column(nullable = false)
     private Integer status = 1;
+
+    @Column(nullable = false)
+    private Integer ownerConfirmed = 0;
+
+    @Column(nullable = false)
+    private Integer requesterConfirmed = 0;
 }

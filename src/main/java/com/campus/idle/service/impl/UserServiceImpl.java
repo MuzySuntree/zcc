@@ -37,15 +37,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserVO updateProfile(UpdateProfileDTO dto) {
-        SysUser user = currentUser();
-        user.setNickname(dto.getNickname());
-        user.setRealName(dto.getRealName());
-        user.setGender(dto.getGender());
-        user.setPhone(dto.getPhone());
-        user.setEmail(dto.getEmail());
-        user.setAvatarUrl(dto.getAvatarUrl());
-        userRepository.save(user);
-        return toVO(user);
+        throw new BizException(ResultCode.FORBIDDEN, "个人资料不能直接修改，请通过资料修改申请提交");
     }
 
     @Override
@@ -57,6 +49,30 @@ public class UserServiceImpl implements UserService {
         }
         user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
         userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public void adminResetPassword(Long userId, String newPassword) {
+        SysUser current = currentUser();
+
+        boolean currentIsAdmin = current.getRoles().stream()
+                .anyMatch(role -> "ROLE_ADMIN".equals(role.getRoleCode()));
+        if (!currentIsAdmin) {
+            throw new BizException(ResultCode.FORBIDDEN, "无权操作");
+        }
+
+        SysUser target = userRepository.findById(userId)
+                .orElseThrow(() -> new BizException(ResultCode.NOT_FOUND, "用户不存在"));
+
+        boolean targetIsAdmin = target.getRoles().stream()
+                .anyMatch(role -> "ROLE_ADMIN".equals(role.getRoleCode()));
+        if (targetIsAdmin) {
+            throw new BizException(ResultCode.FORBIDDEN, "不能修改管理员密码");
+        }
+
+        target.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(target);
     }
 
     private SysUser currentUser() {

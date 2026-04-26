@@ -6,4 +6,6 @@ import com.campus.idle.vo.exchange.ExchangeRecordVO;
 
 public interface ExchangeRecordService {
     PageResult<ExchangeRecordVO> myRecords(ExchangeQueryDTO dto);
+
+    PageResult<ExchangeRecordVO> adminRecords(ExchangeQueryDTO dto);
 }

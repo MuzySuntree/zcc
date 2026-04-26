@@ -26,4 +26,9 @@ public class ExchangeRecordController {
     public Result<PageResult<ExchangeRecordVO>> my(@Valid ExchangeQueryDTO dto) {
         return Result.success(exchangeRecordService.myRecords(dto));
     }
+
+    @GetMapping("/admin")
+    public Result<PageResult<ExchangeRecordVO>> admin(@Valid ExchangeQueryDTO dto) {
+        return Result.success(exchangeRecordService.adminRecords(dto));
+    }
 }

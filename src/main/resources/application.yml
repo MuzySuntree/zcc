@@ -3,10 +3,9 @@ server:
 
 spring:
   datasource:
-    # 建议通过环境变量覆盖，避免把本机账号密码写死在代码里
     url: ${DB_URL:jdbc:mysql://127.0.0.1:3306/campus_idle?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=utf8}
-    username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:root}
+    username: root
+    password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       connection-timeout: 20000
@@ -19,7 +18,6 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
-    # 数据库连不上时，启动日志能更快暴露问题
     open-in-view: false
     show-sql: true
     properties:

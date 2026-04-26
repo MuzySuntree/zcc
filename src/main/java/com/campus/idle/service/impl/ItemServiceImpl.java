@@ -5,7 +5,10 @@ import com.campus.idle.common.ResultCode;
 import com.campus.idle.dto.item.ItemCreateDTO;
 import com.campus.idle.dto.item.ItemQueryDTO;
 import com.campus.idle.dto.item.ItemUpdateDTO;
-import com.campus.idle.entity.*;
+import com.campus.idle.entity.IdleItem;
+import com.campus.idle.entity.ItemCategory;
+import com.campus.idle.entity.ItemImage;
+import com.campus.idle.entity.SysUser;
 import com.campus.idle.exception.BizException;
 import com.campus.idle.repository.IdleItemRepository;
 import com.campus.idle.repository.ItemCategoryRepository;
@@ -77,7 +80,9 @@ public class ItemServiceImpl implements ItemService {
     public ItemDetailVO update(Long id, ItemUpdateDTO dto) {
         IdleItem item = getById(id);
         validateOwnership(item);
-
+        if (item.getStatus() != null && item.getStatus() == 2) {
+            throw new BizException(ResultCode.FORBIDDEN, "已同意交换，无法进行编辑！");
+        }
         ItemCategory category = categoryRepository.findByIdAndDeleted(dto.getCategoryId(), 0)
                 .orElseThrow(() -> new BizException(ResultCode.NOT_FOUND, "分类不存在"));
 
@@ -93,6 +98,7 @@ public class ItemServiceImpl implements ItemService {
         imageRepository.deleteByItemId(item.getId());
         saveImages(item, dto.getImageUrls());
         return detail(item.getId());
+
     }
 
     @Override
@@ -100,6 +106,9 @@ public class ItemServiceImpl implements ItemService {
     public void delete(Long id) {
         IdleItem item = getById(id);
         validateOwnership(item);
+        if (item.getStatus() != null && item.getStatus() == 2) {
+            throw new BizException(ResultCode.FORBIDDEN, "已同意交换，无法删除！");
+        }
         item.setDeleted(1);
         itemRepository.save(item);
         imageRepository.deleteByItemId(id);
@@ -121,25 +130,29 @@ public class ItemServiceImpl implements ItemService {
         Specification<IdleItem> specification = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.equal(root.get("deleted"), 0));
+
             if (StringUtils.hasText(dto.getKeyword())) {
                 predicates.add(cb.or(
                         cb.like(root.get("title"), "%" + dto.getKeyword().trim() + "%"),
                         cb.like(root.get("description"), "%" + dto.getKeyword().trim() + "%")
                 ));
             }
+
             if (dto.getCategoryId() != null) {
                 predicates.add(cb.equal(root.get("category").get("id"), dto.getCategoryId()));
             }
+
             if (dto.getStatus() != null) {
                 predicates.add(cb.equal(root.get("status"), dto.getStatus()));
-            } else {
-                predicates.add(cb.equal(root.get("status"), 1));
             }
+
             query.orderBy(cb.desc(root.get("id")));
             return cb.and(predicates.toArray(new Predicate[0]));
         };
+
         Page<IdleItem> page = itemRepository.findAll(specification, pageable);
         List<ItemSimpleVO> records = page.getContent().stream().map(this::toSimpleVO).toList();
+
         return PageResult.<ItemSimpleVO>builder()
                 .records(records)
                 .total(page.getTotalElements())
@@ -149,6 +162,83 @@ public class ItemServiceImpl implements ItemService {
                 .build();
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public PageResult<ItemSimpleVO> myPage(ItemQueryDTO dto) {
+        SysUser currentUser = securityUtil.getCurrentUser();
+
+        Pageable pageable = PageRequest.of(dto.getPageNum() - 1, dto.getPageSize());
+        Specification<IdleItem> specification = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(cb.equal(root.get("deleted"), 0));
+            predicates.add(cb.equal(root.get("user").get("id"), currentUser.getId()));
+
+            if (StringUtils.hasText(dto.getKeyword())) {
+                predicates.add(cb.or(
+                        cb.like(root.get("title"), "%" + dto.getKeyword().trim() + "%"),
+                        cb.like(root.get("description"), "%" + dto.getKeyword().trim() + "%")
+                ));
+            }
+
+            if (dto.getCategoryId() != null) {
+                predicates.add(cb.equal(root.get("category").get("id"), dto.getCategoryId()));
+            }
+
+            query.orderBy(cb.desc(root.get("id")));
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        Page<IdleItem> page = itemRepository.findAll(specification, pageable);
+        List<ItemSimpleVO> records = page.getContent().stream().map(this::toSimpleVO).toList();
+
+        return PageResult.<ItemSimpleVO>builder()
+                .records(records)
+                .total(page.getTotalElements())
+                .pageNum(dto.getPageNum())
+                .pageSize(dto.getPageSize())
+                .totalPages(page.getTotalPages())
+                .build();
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public PageResult<ItemSimpleVO> adminPage(ItemQueryDTO dto) {
+        Pageable pageable = PageRequest.of(dto.getPageNum() - 1, dto.getPageSize());
+
+        Specification<IdleItem> specification = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(cb.equal(root.get("deleted"), 0));
+
+            if (StringUtils.hasText(dto.getKeyword())) {
+                predicates.add(cb.or(
+                        cb.like(root.get("title"), "%" + dto.getKeyword().trim() + "%"),
+                        cb.like(root.get("description"), "%" + dto.getKeyword().trim() + "%")
+                ));
+            }
+
+            if (dto.getCategoryId() != null) {
+                predicates.add(cb.equal(root.get("category").get("id"), dto.getCategoryId()));
+            }
+
+            // 管理员页面：如果传了状态就筛选，不传就看全部状态
+            if (dto.getStatus() != null) {
+                predicates.add(cb.equal(root.get("status"), dto.getStatus()));
+            }
+
+            query.orderBy(cb.desc(root.get("id")));
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        Page<IdleItem> page = itemRepository.findAll(specification, pageable);
+        List<ItemSimpleVO> records = page.getContent().stream().map(this::toSimpleVO).toList();
+
+        return PageResult.<ItemSimpleVO>builder()
+                .records(records)
+                .total(page.getTotalElements())
+                .pageNum(dto.getPageNum())
+                .pageSize(dto.getPageSize())
+                .totalPages(page.getTotalPages())
+                .build();
+    }
     private IdleItem getById(Long id) {
         return itemRepository.findByIdAndDeleted(id, 0)
                 .orElseThrow(() -> new BizException(ResultCode.NOT_FOUND, "物品不存在"));
@@ -175,7 +265,11 @@ public class ItemServiceImpl implements ItemService {
 
     private ItemSimpleVO toSimpleVO(IdleItem item) {
         String coverImage = imageRepository.findByItemIdOrderBySortNoAscIdAsc(item.getId())
-                .stream().findFirst().map(ItemImage::getImageUrl).orElse(null);
+                .stream()
+                .findFirst()
+                .map(ItemImage::getImageUrl)
+                .orElse(null);
+
         return ItemSimpleVO.builder()
                 .id(item.getId())
                 .title(item.getTitle())
@@ -190,12 +284,15 @@ public class ItemServiceImpl implements ItemService {
 
     private ItemDetailVO toDetailVO(IdleItem item) {
         List<ItemImageVO> images = imageRepository.findByItemIdOrderBySortNoAscIdAsc(item.getId())
-                .stream().map(image -> ItemImageVO.builder()
+                .stream()
+                .map(image -> ItemImageVO.builder()
                         .id(image.getId())
                         .imageUrl(image.getImageUrl())
                         .sortNo(image.getSortNo())
                         .isCover(image.getIsCover())
-                        .build()).toList();
+                        .build())
+                .toList();
+
         return ItemDetailVO.builder()
                 .id(item.getId())
                 .ownerId(item.getUser().getId())

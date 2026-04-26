@@ -9,15 +9,24 @@ import java.time.LocalDateTime;
 @Builder
 public class ExchangeRecordVO {
     private Long id;
+
     private Long requestId;
+
     private Long itemId;
     private String itemTitle;
+
     private Long ownerUserId;
     private String ownerNickname;
+
     private Long requesterUserId;
     private String requesterNickname;
+
     private LocalDateTime exchangeTime;
     private String exchangeLocation;
     private String note;
+
     private Integer status;
+
+    private Integer ownerConfirmed;
+    private Integer requesterConfirmed;
 }

@@ -4,8 +4,9 @@ import lombok.Getter;
 
 @Getter
 public enum ExchangeRecordStatusEnum {
-    VALID(1, "有效"),
-    INVALID(0, "作废");
+    PROCESSING(1, "交换中"),
+    COMPLETED(2, "已完成"),
+    CANCELED(3, "已取消");
 
     private final int code;
     private final String desc;

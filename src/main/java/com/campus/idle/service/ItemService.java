@@ -17,4 +17,6 @@ public interface ItemService {
     ItemDetailVO detail(Long id);
 
     PageResult<ItemSimpleVO> page(ItemQueryDTO dto);
+    PageResult<ItemSimpleVO> myPage(ItemQueryDTO dto);
+    PageResult<ItemSimpleVO> adminPage(ItemQueryDTO dto);
 }

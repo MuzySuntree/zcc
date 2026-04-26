@@ -35,6 +35,7 @@ public class ExchangeRecordServiceImpl implements ExchangeRecordService {
     public PageResult<ExchangeRecordVO> myRecords(ExchangeQueryDTO dto) {
         SysUser currentUser = securityUtil.getCurrentUser();
         Pageable pageable = PageRequest.of(dto.getPageNum() - 1, dto.getPageSize());
+
         Specification<ExchangeRecord> specification = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.or(
@@ -44,8 +45,33 @@ public class ExchangeRecordServiceImpl implements ExchangeRecordService {
             query.orderBy(cb.desc(root.get("id")));
             return cb.and(predicates.toArray(new Predicate[0]));
         };
+
         Page<ExchangeRecord> page = recordRepository.findAll(specification, pageable);
         List<ExchangeRecordVO> records = page.getContent().stream().map(this::toVO).toList();
+
+        return PageResult.<ExchangeRecordVO>builder()
+                .records(records)
+                .total(page.getTotalElements())
+                .pageNum(dto.getPageNum())
+                .pageSize(dto.getPageSize())
+                .totalPages(page.getTotalPages())
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResult<ExchangeRecordVO> adminRecords(ExchangeQueryDTO dto) {
+        Pageable pageable = PageRequest.of(dto.getPageNum() - 1, dto.getPageSize());
+
+        Specification<ExchangeRecord> specification = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            query.orderBy(cb.desc(root.get("id")));
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        Page<ExchangeRecord> page = recordRepository.findAll(specification, pageable);
+        List<ExchangeRecordVO> records = page.getContent().stream().map(this::toVO).toList();
+
         return PageResult.<ExchangeRecordVO>builder()
                 .records(records)
                 .total(page.getTotalElements())
@@ -69,6 +95,8 @@ public class ExchangeRecordServiceImpl implements ExchangeRecordService {
                 .exchangeLocation(record.getExchangeLocation())
                 .note(record.getNote())
                 .status(record.getStatus())
+                .ownerConfirmed(record.getOwnerConfirmed())
+                .requesterConfirmed(record.getRequesterConfirmed())
                 .build();
     }
 }

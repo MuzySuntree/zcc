@@ -5,7 +5,10 @@ import com.campus.idle.common.ResultCode;
 import com.campus.idle.dto.exchange.ExchangeQueryDTO;
 import com.campus.idle.dto.exchange.ExchangeRequestCreateDTO;
 import com.campus.idle.dto.exchange.ExchangeRequestHandleDTO;
-import com.campus.idle.entity.*;
+import com.campus.idle.entity.ExchangeRecord;
+import com.campus.idle.entity.ExchangeRequest;
+import com.campus.idle.entity.IdleItem;
+import com.campus.idle.entity.SysUser;
 import com.campus.idle.enums.ExchangeHandleActionEnum;
 import com.campus.idle.enums.ExchangeRecordStatusEnum;
 import com.campus.idle.enums.ExchangeRequestStatusEnum;
@@ -147,9 +150,15 @@ public class ExchangeRequestServiceImpl implements ExchangeRequestService {
         record.setItem(item);
         record.setOwnerUser(request.getToUser());
         record.setRequesterUser(request.getFromUser());
-        record.setExchangeLocation(dto.getExchangeLocation());
+        String exchangeLocation = dto.getExchangeLocation();
+        if (exchangeLocation == null || exchangeLocation.trim().isEmpty()) {
+            exchangeLocation = item.getCampusLocation();
+        }
+        record.setExchangeLocation(exchangeLocation);
         record.setNote(dto.getNote());
-        record.setStatus(ExchangeRecordStatusEnum.VALID.getCode());
+        record.setStatus(ExchangeRecordStatusEnum.PROCESSING.getCode());
+        record.setOwnerConfirmed(0);
+        record.setRequesterConfirmed(0);
         recordRepository.save(record);
 
         return toVO(request);
@@ -169,6 +178,44 @@ public class ExchangeRequestServiceImpl implements ExchangeRequestService {
         request.setStatus(ExchangeRequestStatusEnum.CANCELED.getCode());
         request.setCancelledTime(LocalDateTime.now());
         requestRepository.save(request);
+    }
+
+    @Override
+    @Transactional
+    public void confirmComplete(Long requestId) {
+        SysUser currentUser = loadCurrentUser();
+
+        ExchangeRequest request = getRequest(requestId);
+        if (request.getStatus() != ExchangeRequestStatusEnum.AGREED.getCode()) {
+            throw new BizException(ResultCode.CONFLICT, "当前申请还未进入交换中状态");
+        }
+
+        ExchangeRecord record = recordRepository.findByRequest_Id(requestId)
+                .orElseThrow(() -> new BizException(ResultCode.NOT_FOUND, "交换记录不存在"));
+
+        if (!record.getOwnerUser().getId().equals(currentUser.getId())
+                && !record.getRequesterUser().getId().equals(currentUser.getId())
+                && !securityUtil.isAdmin(currentUser)) {
+            throw new BizException(ResultCode.FORBIDDEN, "只有交换双方可以确认完成");
+        }
+
+        if (record.getOwnerUser().getId().equals(currentUser.getId())) {
+            record.setOwnerConfirmed(1);
+        }
+
+        if (record.getRequesterUser().getId().equals(currentUser.getId())) {
+            record.setRequesterConfirmed(1);
+        }
+
+        if (record.getOwnerConfirmed() == 1 && record.getRequesterConfirmed() == 1) {
+            record.setStatus(ExchangeRecordStatusEnum.COMPLETED.getCode());
+
+            IdleItem item = record.getItem();
+            item.setStatus(ItemStatusEnum.OFF_SHELF.getCode());
+            itemRepository.save(item);
+        }
+
+        recordRepository.save(record);
     }
 
     private PageResult<ExchangeRequestVO> pageByUser(ExchangeQueryDTO dto, boolean sent, Long userId) {
@@ -202,10 +249,20 @@ public class ExchangeRequestServiceImpl implements ExchangeRequestService {
 
     private SysUser loadCurrentUser() {
         Long uid = securityUtil.getCurrentUser().getId();
-        return userRepository.findById(uid).orElseThrow(() -> new BizException(ResultCode.NOT_FOUND, "用户不存在"));
+        return userRepository.findById(uid)
+                .orElseThrow(() -> new BizException(ResultCode.NOT_FOUND, "用户不存在"));
     }
 
     private ExchangeRequestVO toVO(ExchangeRequest request) {
+        ExchangeRecord record = recordRepository.findByRequest_Id(request.getId()).orElse(null);
+
+        Integer ownerConfirmed = 0;
+        Integer requesterConfirmed = 0;
+        if (record != null) {
+            ownerConfirmed = record.getOwnerConfirmed();
+            requesterConfirmed = record.getRequesterConfirmed();
+        }
+
         return ExchangeRequestVO.builder()
                 .id(request.getId())
                 .itemId(request.getItem().getId())
@@ -217,6 +274,8 @@ public class ExchangeRequestServiceImpl implements ExchangeRequestService {
                 .message(request.getMessage())
                 .offeredItemDesc(request.getOfferedItemDesc())
                 .status(request.getStatus())
+                .ownerConfirmed(ownerConfirmed)
+                .requesterConfirmed(requesterConfirmed)
                 .handledTime(request.getHandledTime())
                 .cancelledTime(request.getCancelledTime())
                 .createdAt(request.getCreatedAt())
