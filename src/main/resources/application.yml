@@ -1,0 +1,38 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:mysql://127.0.0.1:3306/campus_idle?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=utf8}
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      connection-timeout: 20000
+      validation-timeout: 5000
+      maximum-pool-size: 10
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  jackson:
+    time-zone: Asia/Shanghai
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:CampusIdleJwtSecretCampusIdleJwtSecret123456}
+    expiration-seconds: ${JWT_EXPIRE_SECONDS:86400}
+    issuer: ${JWT_ISSUER:campus-idle-backend}
+  upload-dir: ${UPLOAD_DIR:uploads}
+
+logging:
+  level:
+    org.springframework.security: info
